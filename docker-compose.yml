@@ -1,0 +1,56 @@
+version: "2"
+
+services:
+  http:
+    build:
+      context: .
+      dockerfile: Dockerfile-http
+    ports:
+      - 8080:80
+      - 4433:443
+    links:
+      - app
+    volumes_from:
+      - app
+
+  app:
+    build: .
+    container_name: school-api
+    expose:
+      - 9000
+    links:
+      - mysql
+    volumes:
+      - .:/var/www/html
+    environment:
+      APP_ENV: local
+      APP_KEY: aT6v8HLpRc4V6M7mQLMBB4qUWyxFqYcL
+      DB_HOST: mysql
+      DB_DATABASE: school
+      DB_USERNAME: admin
+      DB_PASSWORD: admin
+
+  mysql:
+    image: mysql:latest
+    volumes_from:
+      - data
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: school
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+
+  data:
+    image: mysql:latest
+    volumes:
+      - /var/lib/mysql
+    command: "true"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 3001:80
+    links:
+      - mysql
+    environment:
+      PMA_HOST: mysql
